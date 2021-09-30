@@ -1,20 +1,23 @@
 {
-    "toDo": [
-        {
-            "id": 1,
-            "kegiatan": "Belajar coding",
-            "detail": "Online Zoom"
-        },
-        {
-            "id": 2,
-            "kegiatan": "Main Valorant",
-            "detail": "Map Pochinki"
-        }
-    ],
-    "users":[
-        {
-            "id":1,
-            "name":"Abdi"
-        }
-    ]
+  "toDo": [
+    {
+      "id": 1,
+      "kegiatan": "Belajar coding",
+      "detail": "Online Zoom"
+    },
+    {
+      "kegiatan": "Main bola",
+      "id": 3,
+      "detail": "GBK"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Abdi",
+      "email":"abdi@mail.com",
+      "password":"1234",
+      "role":"users"
+    }
+  ]
 }

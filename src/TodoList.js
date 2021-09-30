@@ -1,13 +1,14 @@
 import React from 'react';
 import axios from 'axios'; // import library axios untuk mengambil data ke API Server
 
+const URL = "http://localhost:2001"
 class TodoList extends React.Component {
     // 1. manage data state
     constructor(props) {
         super(props);
         this.state = {
             dbTodo: [],
-            selectedIndex: null
+            selectedId: null
         }
     }
 
@@ -21,7 +22,7 @@ class TodoList extends React.Component {
     getData = () => {
         // .then((res)=>{}) : berisi respon data jika berhasil
         // .catch((error) => {}) : berisi respon error karena gagal
-        axios.get(`http://localhost:2001/toDo`)
+        axios.get(`${URL}/toDo`)
             .then((response) => {
                 // menampilkan hasil respon data dari URL
                 console.log(response.data)
@@ -34,14 +35,14 @@ class TodoList extends React.Component {
     printToDo = () => {
         console.log("data selectedIndex", this.state.selectedIndex)
         let htmlElement = this.state.dbTodo.map((value, index) => {
-            if (this.state.selectedIndex == index) {
+            if (this.state.selectedId == value.id) {
                 return (
                     <tr>
                         <th>{index + 1}</th>
                         <td><input type="text" defaultValue={value.kegiatan} ref="editKegiatan" /></td>
                         <td><input type="text" defaultValue={value.detail} ref="editDetail" /></td>
-                        <td><button type="button" onClick={this.btnCancel}>Cancel</button>
-                            <button type="button" onClick={this.btnSave}>Save</button>
+                        <td><button className="btn btn-outline-warning btn-sm" type="button" onClick={this.btnCancel}>Cancel</button>
+                            <button className="btn btn-outline-primary btn-sm" type="button" onClick={this.btnSave}>Save</button>
                         </td>
                     </tr>
                 )
@@ -51,8 +52,8 @@ class TodoList extends React.Component {
                         <th>{index + 1}</th>
                         <td>{value.kegiatan}</td>
                         <td>{value.detail}</td>
-                        <td><button type="button" onClick={() => this.btnDelete(index)}>Delete</button>
-                            <button type="button" onClick={() => this.btnEdit(index)}>Edit</button>
+                        <td><button className="btn btn-danger btn-sm" type="button" onClick={() => this.btnDelete(value.id)}>Delete</button>
+                            <button className="btn btn-warning btn-sm" type="button" onClick={() => this.btnEdit(value.id)}>Edit</button>
                         </td>
                     </tr>
                 )
@@ -62,28 +63,47 @@ class TodoList extends React.Component {
     }
 
     btnSave = () => {
-        let temp = [...this.state.dbTodo]
-        temp[this.state.selectedIndex].kegiatan = this.refs.editKegiatan.value
-        temp[this.state.selectedIndex].detail = this.refs.editDetail.value
-        this.setState({
-            dbTodo: temp,
-            selectedIndex: null
+        let kegiatan = this.refs.editKegiatan.value;
+        let detail = this.refs.editDetail.value;
+
+        axios.patch(`${URL}/toDo/${this.state.selectedId}`, {
+            kegiatan,
+            detail
+        }).then((res) => {
+            this.getData()
+            this.setState({ selectedId: null })
+        }).catch((err) => {
+            console.log(err)
         })
+        // let temp = [...this.state.dbTodo]
+        // temp[this.state.selectedIndex].kegiatan = this.refs.editKegiatan.value
+        // temp[this.state.selectedIndex].detail = this.refs.editDetail.value
+        // this.setState({
+        //     dbTodo: temp,
+        //     selectedIndex: null
+        // })
     }
 
     btnCancel = () => {
-        this.setState({ selectedIndex: null })
+        this.setState({ selectedId: null })
     }
 
-    btnEdit = (idx) => {
+    btnEdit = (id) => {
         // memperbarui data pada state => this.setState({namaProperty:data})
-        this.setState({ selectedIndex: idx })
+        this.setState({ selectedId: id })
     }
 
-    btnDelete = (idx) => {
-        let temp = [...this.state.dbTodo]
-        temp.splice(idx, 1)
-        this.setState({ dbTodo: temp })
+    btnDelete = (id) => {
+        axios.delete(`${URL}/toDO/${id}`)
+            .then((res) => {
+                this.getData()
+            }).catch((err) => {
+                console.log(err)
+            })
+
+        // let temp = [...this.state.dbTodo]
+        // temp.splice(idx, 1)
+        // this.setState({ dbTodo: temp })
     }
 
     btnAdd = () => {
@@ -91,14 +111,24 @@ class TodoList extends React.Component {
         let kegiatan = this.refs.addKegiatan.value;
         let detail = this.refs.addDetail.value;
 
+        axios.post(`${URL}/toDo`, {
+            kegiatan,
+            detail
+        }).then((response) => {
+            // get data ulang
+            this.getData()
+        }).catch((error) => {
+            console.log(error)
+        })
+        // Methode untuk penyimpanan pada state
         // 2. duplikasi data dari state.dbTodo kedalam variable temp
-        let temp = [...this.state.dbTodo];
+        // let temp = [...this.state.dbTodo];
 
         // 3. data kita push ke variable temp
-        temp.push({ kegiatan, detail });
+        // temp.push({ kegiatan, detail });
 
         // 4. data terbaru pada variable temp kita simpan kembali kedalam state.dbToDo
-        this.setState({ dbTodo: temp })
+        // this.setState({ dbTodo: temp })
 
         // Cara langsung
         // this.state.dbTodo.push({ kegiatan, detail })
@@ -108,10 +138,10 @@ class TodoList extends React.Component {
     // 3. render untuk membuat component
     render() {
         return (
-            <div style={{ width: '80vw', margin: "auto", border: "1px solid gray" }}>
+            <div style={{ width: '80vw', margin: "auto", border: "1px solid gray", overflow: "auto" }}>
                 <h2 style={{ textAlign: 'center' }}>To Do List</h2>
-                <table style={{ margin: 'auto' }}>
-                    <thead>
+                <table className="table" style={{ margin: 'auto' }}>
+                    <thead className="thead-dark">
                         <th>No</th>
                         <th>Kegiatan</th>
                         <th>Detail</th>
@@ -125,7 +155,7 @@ class TodoList extends React.Component {
                         <th>#</th>
                         <th><input type="text" placeholder="Kegiatan Baru" ref="addKegiatan" /></th>
                         <th><input type="text" placeholder="Detail" ref="addDetail" /></th>
-                        <th><button type="button" onClick={this.btnAdd}>Add</button></th>
+                        <th><button className="btn btn-outline-success btn-sm" type="button" onClick={this.btnAdd}>Add</button></th>
                     </tfoot>
                 </table>
             </div>
